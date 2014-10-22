@@ -65,34 +65,6 @@ Comes with an application, watchForProcessToStart, which watches for an arbitrar
 Useful for scripts that need to wait for a process to begin before performing an action. All params are considered loose. An application front for the equivlant methods below
 
 
-disttask
-========
-
-Comes with an application, disttask, which makes it easy to take advantage of multi-processing by splitting a job across  number of processes, whilst retaining sane output.
-
-	Usage: ./disttask [cmd] [concurrent tasks] [argset]
-	Use a %s in [cmd] where you want the args to go. use %d for the pipe number.
-
-
-It runs up to "concurrent tasks" applications simultaniously, captures and processes output such that things printed to stdout or stderr are not intertwined.
-
-Example:
-
-	./disttask "echo %d %s" 3 "this" "is" "some" "text" "blah" "whooptie" "Doo"
-	0 this
-	1 is
-	2 some
-	0 text
-	1 blah
-	2 whooptie
-	0 Doo
-
-Another Example:
-
-	Run php lint, using 10 simultanious processes, on all php files in subdirectories (requires shopt -s globstar)
-
-	./disttask "php -l %s" 10 `echo **/*.php`
-
 Library
 =======
 
