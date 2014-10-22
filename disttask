@@ -1,0 +1,84 @@
+#!/usr/bin/env python2
+
+#Copyright (c) Timothy Savannah under LGPL, All Rights Reserved. See LICENSE for more information
+
+import sys
+import subprocess
+import threading
+import time
+
+stdoutLock = threading.Lock()
+def write_stdout(txt):
+    stdoutLock.acquire()
+    sys.stdout.write(txt)
+    sys.stdout.flush()
+    time.sleep(.05)
+    stdoutLock.release()
+
+class Runner(threading.Thread):
+
+    def __init__(self, cmd):
+        threading.Thread.__init__(self)
+        self.cmd = cmd
+
+    def run(self):
+        pipe = subprocess.Popen(self.cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        output = pipe.stdout.read()
+        pipe.wait()
+        write_stdout(output)
+
+class DistTask(object):
+    def __init__(self, cmd, concurrent_tasks, argset):
+        self.cmd = cmd
+        self.concurrent_tasks = concurrent_tasks
+        self.argset = argset
+
+    def run(self):
+        argset = self.argset[:] # Copy so we can modify
+        for i in range(self.concurrent_tasks):
+            pipes.append(None)
+
+        pipesRunning = -1
+
+        while pipesRunning != 0:
+            pipesRunning = 0
+            for i in range(self.concurrent_tasks):
+                if pipes[i] == None:
+                    if len(argset):
+                        cmd = self.cmd.replace('%s', argset[0]).replace('%d', str(i))
+                        pipes[i] = Runner(cmd)
+                        pipes[i].start()
+                        pipesRunning += 1
+                        del argset[0]
+                else:
+                    if pipes[i].isAlive() == False:
+                        if len(argset):
+                            cmd = self.cmd.replace('%s', argset[0]).replace('%d', str(i))
+                            pipes[i].join() # cleanup
+                            pipes[i] = Runner(cmd)
+                            pipes[i].start()
+                            pipesRunning += 1
+                            del argset[0]
+                    else:
+                        pipesRunning += 1
+
+            time.sleep(.002)
+
+if (__name__ == "__main__"):
+    if len(sys.argv) < 4:
+        sys.stderr.write("Usage: " + sys.argv[0] + " [cmd] [concurrent tasks] [argset]\n")
+        sys.stderr.write("Use a %s in [cmd] where you want the args to go. use %d for the pipe number.\n")
+        sys.exit(1)
+
+
+    pipes = []
+
+
+    cmd = sys.argv[1]
+    if cmd.find('%s') == -1:
+        sys.stderr.write("No %s in command!\n")
+        sys.exit(1)
+    concurrent_tasks = int(sys.argv[2])
+    argset = sys.argv[3:]
+    runner = DistTask(cmd, concurrent_tasks, argset)
+    runner.run()
