@@ -1,0 +1,22 @@
+#!/bin/sh
+
+#Copyright (c) Timothy Savannah under LGPL, All Rights Reserved. See LICENSE for more information
+
+if [ $# -lt 1 ];
+then
+    echo "Usage: watchProcessAndRestart [cmd]";
+    echo "";
+    echo "Keeps running application until it returns a status code of 55.";
+
+    exit 1
+fi
+
+while [ 1 ];
+do
+    $@;
+    if [ $? -eq 55 ];
+    then
+    	exit 0
+    fi
+    sleep .5;
+done

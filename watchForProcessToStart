@@ -1,0 +1,30 @@
+#!/usr/bin/env python
+
+#Copyright (c) Timothy Savannah under LGPL, All Rights Reserved. See LICENSE for more information
+import sys
+
+import ProcessUtils
+
+
+if len(sys.argv) < 3:
+    sys.stderr.write("Usage: watchForProcessToStart [timeout] [processName] (optional list of params).\nWaits for any processes matching arguments to Start\n\n")
+    sys.stderr.write("Exits with code 51 if an old start-time was found on a process (an existing process was running, but new did not start)\n")
+    sys.stderr.write("Exits with code 52 if no process was found after timeout matching the given criteria.\n\n")
+    sys.exit(1)
+
+timeout = int(sys.argv[1])
+processName = sys.argv[2]
+extraParams = []
+if len(sys.argv) > 3:
+    extraParams = sys.argv[3:]
+
+try:
+    ProcessUtils.ProcessWatching.watchForProcessToStart(processName, extraParams, timeout=timeout)
+except ProcessUtils.ProcessWatching.OldStartTime as e:
+    sys.stderr.write("Old start-time for service %s on pids %s. Please check!\n" %(processName, ','.join([str(pid) for pid in e.pids])))
+    sys.exit(51)
+except ProcessUtils.ProcessWatching.DidNotStart as e:
+    sys.stderr.write("Service %s did not start within %d seconds! Please Check!\n" %(processName, timeout))
+    sys.exit(52)
+
+sys.exit(0)

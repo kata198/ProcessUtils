@@ -1,0 +1,42 @@
+#!/usr/bin/env python
+'''
+   Wrapper around ProcessUtils.Pidof.getPidsOfPRocess to allow to be called from shell
+   Copyright (c) Timothy Savannah under LGPL, All Rights Reserved. See LICENSE for more information
+'''
+
+import os
+import sys
+
+import ProcessUtils
+
+isLoose = False
+if '--loose' in sys.argv:
+    sys.argv.remove('--loose')
+    isLoose = True
+
+if len(sys.argv) < 2:
+    sys.stderr.write('''Usage: getPids programName (--loose) [extra]
+ This application extends "pidof" functionality. Anything contained in optional argument [extra] must also be present
+
+    --loose\t\tArguments should be treated as "loose" matches (any order). Otherwise, exact match only.
+    [extra]\t\tAny extra string portions for which we should match
+
+Example, for an application python apps/SomeApp.py
+
+`getPids python apps/SomeApp.py` would return the pid of that application.
+''')
+    sys.stderr.flush()
+    sys.exit(1)
+
+programName = sys.argv[1]
+alsoContains = sys.argv[2:]
+
+lst = ProcessUtils.Pidof.getPidsOfProcess(programName, alsoContains, isLoose)
+
+toPrint = []
+for item in lst:
+    if str(item) != str(os.getpid()):
+        toPrint.append(str(item))
+
+if toPrint:
+    sys.stdout.write(' '.join(toPrint) + "\n")

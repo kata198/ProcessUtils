@@ -1,0 +1,28 @@
+#!/usr/bin/env python
+
+#Copyright (c) Timothy Savannah under LGPL, All Rights Reserved. See LICENSE for more information
+
+import os
+import sys
+
+import ProcessUtils
+
+
+if len(sys.argv) < 3:
+    sys.stderr.write("Usage: watchForProcessToDie [timeout] [processName] (optional list of params).\n\nWaits for any processes matching arguments to Die\n")
+    sys.exit(1)
+
+timeout = int(sys.argv[1])
+processName = sys.argv[2]
+extraParams = []
+if len(sys.argv) > 3:
+    extraParams = sys.argv[3:]
+
+ret = ProcessUtils.ProcessWatching.watchForProcessesToDieByName(processName, extraParams, ignorePids=[os.getpid()], timeout=timeout)
+
+if ret == False:
+    sys.stderr.write("Service %s failed to stop within %d seconds. Please manually check that everything is working correctly.\n" %(processName, timeout))
+    sys.exit(1)
+
+
+sys.exit(0)

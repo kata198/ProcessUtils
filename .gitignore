@@ -1,0 +1,9 @@
+*.pyc
+*.pyo
+*.rej
+*.orig
+*.swp
+*.swo
+*~
+__pycache__
+__pycache__/*
